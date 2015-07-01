@@ -42,7 +42,7 @@ import com.aalmeida.citizencard.entities.WebSocketMessage;
  *
  * @author Alexandre
  */
-@ServerEndpoint("/websocket")
+@ServerEndpoint("/citizensocket")
 public class CitizenCardWebSocket {
 
     private static final Set<Session> SESSIONS = Collections.synchronizedSet(new HashSet<Session>());
@@ -69,7 +69,7 @@ public class CitizenCardWebSocket {
                     e.printStackTrace();
                 }
             }
-        }, 0, 3000);
+        }, 0, 5000);
     }
 
     /**

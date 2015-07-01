@@ -25,6 +25,10 @@ apply plugin: "eclipse-wtp"
 
 version = "1.0"
 
+ext {
+    mainClassName = "com.aalmeida.EmbeddedHTTPServer"
+}
+
 repositories {
 	mavenLocal()
     mavenCentral()
@@ -48,5 +52,12 @@ dependencies {
 	
 	compile "org.glassfish.jersey.core:jersey-server:2.18"
 	compile "org.glassfish.jersey.containers:jersey-container-jdk-http:2.18"
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': project.mainClassName
+        attributes 'Version': project.version
+    }
 }
 

@@ -35,7 +35,7 @@ import pteidlib.PteidException;
  *
  * @author Alexandre
  */
-@Path("api")
+@Path("rest")
 public class CitizenCardAPI {
 
     /**

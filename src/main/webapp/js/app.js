@@ -15,6 +15,8 @@
  */
 var CitizenCard = CitizenCard || {};
 
+CitizenCard.url = "127.0.0.1:9095";
+
 CitizenCard.mode = 2; // 1 - ajax; 2 - socket
 
 CitizenCard.cardInserted = false;
@@ -52,7 +54,7 @@ CitizenCard.check = function() {
 	}
 	CitizenCard.isChecking = true;
 	$.ajax({
-	    url: "http://10.0.1.104:9095/api/checkCard",
+	    url: "http://" + CitizenCard.url + "/api/checkCard",
 	    jsonp: "callback",
 	    dataType: "jsonp",
 	    success: function( response ) {
@@ -85,7 +87,7 @@ CitizenCard.getData = function() {
 
 	CitizenCard.isRetrivingData = true;
 	$.ajax({
-	    url: "http://127.0.0.1:9095/api/getData",
+	    url: "http://" + CitizenCard.url + "/api/getData",
 	    jsonp: "callback",
 	    dataType: "jsonp",
 	    success: function( response ) {
@@ -111,7 +113,7 @@ CitizenCardSocket.open = function() {
         return;
      }
      // Create a new instance of the websocket
-	websocket = new WebSocket("ws://127.0.0.1:9095/websocket");
+	websocket = new WebSocket("ws://" + CitizenCard.url + "/websocket/citizensocket");
 	websocket.onopen = function( event ) {
          // For reasons I can't determine, onopen gets called twice
          // and the first time event.data is undefined.

@@ -62,7 +62,7 @@ public class CitizenCardWebSocket {
     public void onOpen(final Session session) throws IOException, EncodeException {
         System.out.println(session.getId() + " has opened a connection");
         SESSIONS.add(session);
-        session.getBasicRemote().sendObject("{\"data\":{\"connected\":true}}");
+        session.getBasicRemote().sendObject("{\"data\":{\"cardInserted\":false}}");
     }
 
     /**

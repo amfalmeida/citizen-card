@@ -26,7 +26,6 @@ import javax.websocket.server.ServerContainer;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
@@ -40,8 +39,12 @@ import com.aalmeida.citizencard.CitizenCardWebSocket;
  */
 public class EmbeddedHTTPServer {
 
+    /**
+     * Open browser.
+     */
     private static void openBrowser() {
-        String url = "http://localhost:9095/index.html";
+        //String url = "http://localhost:9095/index.html";
+        String url = "http://www.amfalmeida.com/citizen-card";
 
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
@@ -60,11 +63,16 @@ public class EmbeddedHTTPServer {
         }
     }
 
+    /**
+     * The main method.
+     *
+     * @param args
+     *            the arguments
+     * @throws Exception
+     *             the exception
+     */
     public static void main(String[] args) throws Exception {
         System.out.println("Starting Embedded HTTPServer...\n");
-
-        String currDir = System.getProperty("user.dir");
-        String webdir = currDir + "\\src\\main\\webapp\\";
 
         CitizenCard.init();
 
@@ -79,14 +87,20 @@ public class EmbeddedHTTPServer {
 
         Server server = new Server(9095);
 
+        /*
+        String currDir = System.getProperty("user.dir");
+        String webdir = currDir + "\\src\\main\\webapp\\";
+        
         ResourceHandler htmlHandler = new ResourceHandler();
         htmlHandler.setResourceBase(webdir);
+        */
 
         ServletContextHandler apiHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         apiHandler.setContextPath("/websocket/*");
         
         HandlerList hl = new HandlerList();
-        hl.setHandlers(new Handler[]{htmlHandler, apiHandler});
+        //hl.setHandlers(new Handler[]{htmlHandler, apiHandler});
+        hl.setHandlers(new Handler[]{apiHandler});
         server.setHandler(hl);
 
         ServerContainer wscontainer = WebSocketServerContainerInitializer.configureContext(apiHandler);

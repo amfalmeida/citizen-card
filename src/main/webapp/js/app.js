@@ -53,15 +53,12 @@ CitizenCardSocket.open = function() {
 	if(websocket !== undefined && websocket.readyState !== websocket.CLOSED){
 		CitizenCardSocket.writeResponse("WebSocket is already opened.");
         return;
-     }
-     // Create a new instance of the websocket
+	}
 	websocket = new WebSocket("ws://" + CitizenCard.url + "/websocket/citizensocket");
 	websocket.onopen = function( event ) {
-         // For reasons I can't determine, onopen gets called twice
-         // and the first time event.data is undefined.
-         // Leave a comment if you know the answer.
-         if(event.data === undefined)
+         if(event.data === undefined) {
              return;
+         }
 
          CitizenCardSocket.writeResponse( event.data );
      };
@@ -82,6 +79,7 @@ CitizenCardSocket.open = function() {
 
      websocket.onclose = function( event ) {
     	 CitizenCardSocket.writeResponse("Connection closed");
+    	 CitizenCard.cardNotPresent();
      };
 }
 

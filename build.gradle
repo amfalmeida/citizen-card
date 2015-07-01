@@ -1,3 +1,6 @@
+
+defaultTasks = ["clean", "build", "jar", "copyToLib", "makePackage"]
+
 buildscript {
     repositories {
         mavenCentral()
@@ -7,6 +10,7 @@ buildscript {
     }
     dependencies {
          classpath "com.wiredforcode:gradle-heroku-plugin:1.0.0"
+         classpath "edu.sc.seis.gradle:launch4j:1.0.6"
     }
 }
 
@@ -20,12 +24,13 @@ configurations {
 	runtimeOnly
 }
 
-apply plugin: "war"
 apply plugin: "eclipse-wtp"
+apply plugin: 'launch4j'
 
 version = "1.0"
 
 ext {
+	launch4j = "C:/Personal/Software/launch4j"
     mainClassName = "com.aalmeida.EmbeddedHTTPServer"
 }
 
@@ -41,9 +46,7 @@ dependencies {
     compile 'org.eclipse.jetty:jetty-servlet:+'
     compile 'org.eclipse.jetty.websocket:websocket-client:+'
     compile 'org.eclipse.jetty.websocket:javax-websocket-server-impl:+'
-	
-	//compile "com.sun.jersey:jersey-client:1.19"
-	//compile "com.sun.jersey:jersey-bundle:1.19"
+
 	compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.18'
 	
 	compile "com.fasterxml:jackson-module-json-org:0.9.1"
@@ -54,10 +57,42 @@ dependencies {
 	compile "org.glassfish.jersey.containers:jersey-container-jdk-http:2.18"
 }
 
-jar {
-    manifest {
-        attributes 'Main-Class': project.mainClassName
-        attributes 'Version': project.version
-    }
+jar.doFirst{
+      manifest {
+            attributes("Manifest-Version": "1.0",
+        		//"Created-By": vendor,
+                //"Specification-Title": appName,
+                "Specification-Version": project.version,
+                //"Specification-Vendor": vendor,
+                //"Implementation-Title": appName,
+                "Implementation-Version": project.version,
+                //"Implementation-Vendor": vendor,
+                "Main-Class": project.mainClassName,
+                "Class-Path": configurations.compile.collect { 'lib/' + it.getName() }.join(' ')           
+            )
+      }
 }
 
+task copyToLib(type: Copy) {
+    into "$buildDir/executable/lib"
+    from configurations.runtime
+}
+
+task makePackage(dependsOn: ["jar"]) << {
+    if (!project.hasProperty("launch4j")) {
+        throw new RuntimeException("Specify launch4j directory")
+    }
+    def userDir = System.getProperty("user.dir");
+    def launch4jDir = new File(project.launch4j)
+	def launch4jConfig = new File(userDir, "citizen-card.xml").absolutePath
+    
+    println launch4jDir.absolutePath
+    println launch4jConfig
+
+    def p = "createexe.bat ${userDir} ${launch4jDir.absolutePath} ${launch4jConfig}".execute()
+    p.waitForProcessOutput(System.out, System.err)
+    println p.exitValue()
+    if (p.exitValue()) {
+		throw new RuntimeException("launch4j failed")
+	}
+}

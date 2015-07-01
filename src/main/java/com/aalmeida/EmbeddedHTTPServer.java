@@ -28,11 +28,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
 import com.aalmeida.citizencard.CitizenCard;
-import com.aalmeida.citizencard.CitizenCardAPI;
 import com.aalmeida.citizencard.CitizenCardWebSocket;
 
 /**
@@ -94,9 +92,9 @@ public class EmbeddedHTTPServer {
         ServerContainer wscontainer = WebSocketServerContainerInitializer.configureContext(apiHandler);
         wscontainer.addEndpoint(CitizenCardWebSocket.class);
 
-        ServletHolder jerseyServlet = apiHandler.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/api/*");
-        jerseyServlet.setInitOrder(1);
-        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", CitizenCardAPI.class.getCanonicalName());
+//        ServletHolder jerseyServlet = apiHandler.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/api/*");
+//        jerseyServlet.setInitOrder(1);
+//        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", CitizenCardAPI.class.getCanonicalName());
 
         openBrowser();
         

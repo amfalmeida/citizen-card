@@ -28,8 +28,6 @@ import javax.ws.rs.core.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.util.JSONPObject;
 
-import pteidlib.PteidException;
-
 /**
  * The Class CitizenCardAPI.
  *
@@ -52,7 +50,7 @@ public class CitizenCardAPI {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> map = new HashMap<String, Object>();
-            map.put("cardInserted", CitizenCard.getInstance().checkCard());
+//            map.put("cardInserted", CitizenCard.getInstance().checkCard());
             return objectMapper.writeValueAsString(new JSONPObject(callback, map));
         } catch (IOException e) {
             e.printStackTrace();
@@ -79,9 +77,6 @@ public class CitizenCardAPI {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
-        } catch (PteidException e) {
-            e.printStackTrace();
-            return null;
-        }
+        } 
     }
 }

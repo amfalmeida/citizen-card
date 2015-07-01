@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.websocket.EncodeException;
 import javax.websocket.OnClose;
@@ -33,9 +31,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import pteidlib.PteidException;
-
-import com.aalmeida.citizencard.entities.WebSocketMessage;
+import com.aalmeida.citizencard.entities.CitizenCardData;
 
 /**
  * The Class CitizenCardWebSocket.
@@ -46,30 +42,12 @@ import com.aalmeida.citizencard.entities.WebSocketMessage;
 public class CitizenCardWebSocket {
 
     private static final Set<Session> SESSIONS = Collections.synchronizedSet(new HashSet<Session>());
-    private static boolean isCardInserted = false;
 
-    private final Timer cardCheckTimer = new Timer(true);
-    
+    /**
+     * Instantiates a new citizen card web socket.
+     */
     public CitizenCardWebSocket() {
-        cardCheckTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    String token = CitizenCard.getInstance().checkCard();
-                    boolean isCardPresent = token != null && !token.trim().isEmpty();
-                    if (isCardPresent != isCardInserted) {
-                        isCardInserted = isCardPresent;
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        Map<String, Object> map = new HashMap<String, Object>();
-                        map.put("cardInserted", token != null && !token.trim().isEmpty());
-                        map.put("token", token);              
-                        sendMessageToAll(objectMapper.writeValueAsString(map));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 0, 5000);
+        CitizenCard.getInstance().addListener(new CitizenCardEvent());
     }
 
     /**
@@ -77,21 +55,14 @@ public class CitizenCardWebSocket {
      *
      * @param session
      *            the session
+     * @throws EncodeException
+     * @throws IOException
      */
     @OnOpen
-    public void onOpen(final Session session) {
+    public void onOpen(final Session session) throws IOException, EncodeException {
         System.out.println(session.getId() + " has opened a connection");
         SESSIONS.add(session);
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> map = new HashMap<String, Object>();
-            String token = CitizenCard.getInstance().checkCard();
-            map.put("cardInserted", token != null && !token.trim().isEmpty());
-            map.put("token", token);
-            session.getBasicRemote().sendText(objectMapper.writeValueAsString(map));
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        session.getBasicRemote().sendObject("{\"data\":{\"connected\":true}}");
     }
 
     /**
@@ -104,27 +75,6 @@ public class CitizenCardWebSocket {
      */
     @OnMessage
     public void onMessage(String message, Session session) {
-        System.out.println("Message from " + session.getId() + ": " + message);
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            WebSocketMessage msg = mapper.readValue(message, WebSocketMessage.class);
-            if (msg == null) {
-                return;
-            }
-            if (msg.getOp() != null && msg.getOp().equals("getData")) {
-                Map<String, Object> map = new HashMap<String, Object>();
-                if (msg.getToken() != null && !msg.getToken().trim().isEmpty()) {
-                    map.put("data", CitizenCard.getInstance().getData(msg.getToken()));
-                } else {
-                    map.put("data", CitizenCard.getInstance().getData());    
-                }
-                session.getBasicRemote().sendText(mapper.writeValueAsString(map));
-                return;
-            }
-            session.getBasicRemote().sendText(message);
-        } catch (IOException | PteidException ex) {
-            ex.printStackTrace();
-        }
     }
 
     /**
@@ -157,4 +107,29 @@ public class CitizenCardWebSocket {
         }
     }
 
+    public class CitizenCardEvent implements ICitizenCardEventListener {
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see
+         * com.aalmeida.citizencard.ICitizenCardEventListener#cardChangedEvent
+         * (com.aalmeida.citizencard.entities.CitizenCardData, boolean)
+         */
+        @Override
+        public void cardChangedEvent(CitizenCardData ccData, boolean inserted) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("cardInserted", inserted);
+            if (inserted) {
+                map.put("data", CitizenCard.getInstance().getData());
+            }
+            try {
+                sendMessageToAll(objectMapper.writeValueAsString(map));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 }

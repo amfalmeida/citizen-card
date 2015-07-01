@@ -71,4 +71,12 @@ public class CitizenCardData {
         surname = pSurname;
     }
 
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "CitizenCardData [token=" + token + ", firstname=" + firstname + ", surname=" + surname + "]";
+    }
 }

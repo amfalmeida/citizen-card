@@ -15,15 +15,17 @@
  */
 package com.aalmeida.citizencard;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.aalmeida.citizencard.entities.CitizenCardData;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import pteidlib.PTEID_ID;
 import pteidlib.PTEID_TokenInfo;
 import pteidlib.PteidException;
 import pteidlib.pteid;
+
+import com.aalmeida.citizencard.entities.CitizenCardData;
 
 /**
  * The Class CitizenCard.
@@ -40,10 +42,15 @@ public class CitizenCard {
     }
 
     private static CitizenCard instance;
-    private static Map<String, CitizenCardData> dataCache;
+    private final Timer cardCheckTimer = new Timer(true);
+    private List<ICitizenCardEventListener> listeners = new ArrayList<ICitizenCardEventListener>();
+    private static CitizenCardData ccData;
 
+    /**
+     * Instantiates a new citizen card.
+     */
     private CitizenCard() {
-        dataCache = new HashMap<String, CitizenCardData>();
+        ccData = null;
     }
 
     /**
@@ -51,17 +58,16 @@ public class CitizenCard {
      */
     public static void init() {
         instance = new CitizenCard();
-    }
-    
-    /**
-     * Exit.
-     */
-    private void exit() {
-        try {
-            pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
-        } catch (PteidException e) {
-            e.printStackTrace();
-        }
+        instance.cardCheckTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    instance.checkCard();
+                } catch(Throwable t) {
+                    
+                }
+            }
+        }, 0, 1000);
     }
 
     /**
@@ -74,21 +80,51 @@ public class CitizenCard {
     }
 
     /**
+     * Adds the listener.
+     *
+     * @param toAdd
+     *            the to add
+     */
+    public void addListener(ICitizenCardEventListener toAdd) {
+        listeners.add(toAdd);
+    }
+    
+    /**
      * Check card.
      *
      * @return true, if successful
      */
-    public String checkCard() {
+    private void checkCard() {
         try {
             pteid.Init("");
             pteid.SetSODChecking(false);
-
-            return getToken();
+            
+            PTEID_TokenInfo tokenInfo = pteid.GetTokenInfo();
+            final String token = tokenInfo.serial;
+            if (token != null) {
+                sendNotification(null, true);
+            }
+            if (ccData != null && ccData.getToken().equals(token)) {
+                return;
+            }            
+            ccData = new CitizenCardData();
+            ccData.setToken(token);
+            while (ccData.getFirstName() == null) {
+                PTEID_ID idData = pteid.GetID();
+                ccData.setFirstName(idData.firstname);
+                ccData.setSurname(idData.name);
+            }            
+            System.out.println(ccData);
         } catch (PteidException ex) {
-            ex.printStackTrace();
-            return null;
+            sendNotification(null, false);
+            System.out.println("Card not present. Error: " + ex.getStatus());
+            ccData = null;
         } finally {
-            exit();
+            try {
+                pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
+            } catch (PteidException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -96,49 +132,24 @@ public class CitizenCard {
      * Gets the data.
      *
      * @return the data
-     * @throws PteidException
-     *             the pteid exception
      */
-    public CitizenCardData getData() throws PteidException {
-        try {
-            pteid.Init("");
-            pteid.SetSODChecking(false);
-
-            String token = getToken();
-            if (dataCache.containsKey(token)) {
-                return dataCache.get(token);
-            }
-            
-            CitizenCardData ccData = new CitizenCardData();
-            ccData.setToken(token);
-            while (ccData.getFirstName() == null) {
-                PTEID_ID idData = pteid.GetID();
-                ccData.setFirstName(idData.firstname);
-                ccData.setSurname(idData.name);
-                dataCache.put(token, ccData);
-            }
-            return ccData;
-        } finally {
-            exit();
-        }
+    public CitizenCardData getData() {
+        return ccData;
     }
     
-    public CitizenCardData getData(final String token) throws PteidException {
-        if (dataCache.containsKey(token)) {
-            return dataCache.get(token);
-        }
-        return getData();
-    }
-
     /**
-     * Inits the and retrive token.
+     * Send notification.
      *
-     * @return the string
-     * @throws PteidException
-     *             the pteid exception
+     * @param data
+     *            the data
+     * @param inserted
+     *            the inserted
      */
-    private String getToken() throws PteidException {
-        PTEID_TokenInfo token = pteid.GetTokenInfo();
-        return token.serial;
+    private void sendNotification(final CitizenCardData data, final boolean inserted) {
+        if (listeners != null) {
+            for (ICitizenCardEventListener listener : listeners) {
+                listener.cardChangedEvent(data, inserted);
+            }
+        }
     }
 }

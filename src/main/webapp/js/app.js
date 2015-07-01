@@ -17,8 +17,6 @@ var CitizenCard = CitizenCard || {};
 
 CitizenCard.url = "127.0.0.1:9095";
 
-CitizenCard.mode = 2; // 1 - ajax; 2 - socket
-
 CitizenCard.cardInserted = false;
 CitizenCard.isChecking = false;
 CitizenCard.isRetrivingData = false;
@@ -48,62 +46,6 @@ CitizenCard.cardDataFetched = function( data ) {
 	CitizenCard.$messages.hide();
 }
 
-CitizenCard.check = function() {
-	if (CitizenCard.isChecking || CitizenCard.isRetrivingData) {
-		return;
-	}
-	CitizenCard.isChecking = true;
-	$.ajax({
-	    url: "http://" + CitizenCard.url + "/api/checkCard",
-	    jsonp: "callback",
-	    dataType: "jsonp",
-	    success: function( response ) {
-	    	if (CitizenCard.cardInserted && response.cardInserted) {
-	    		return;
-	    	}
-	        if (response.cardInserted) {
-	        	CitizenCard.CardPresent();
-	        	CitizenCard.getData();
-	        } else {
-	        	CitizenCard.cardNotPresent();
-	        }
-	    },
-	    error: function( error ) {
-	    	CitizenCard.$messages.text("An error occurred when try to check if a card is present.");
-	    },
-	    complete: function() {
-	    	CitizenCard.isChecking = false;
-	    }
-
-	});
-};
-
-CitizenCard.getData = function() {
-	if (CitizenCard.isRetrivingData) {
-		return;
-	}
-	CitizenCard.$data.firstname.val("");
-	CitizenCard.$data.surname.val("");
-
-	CitizenCard.isRetrivingData = true;
-	$.ajax({
-	    url: "http://" + CitizenCard.url + "/api/getData",
-	    jsonp: "callback",
-	    dataType: "jsonp",
-	    success: function( response ) {
-	    	if (response.data) {
-	    		CitizenCard.cardDataFetched(response.data);
-	    	}
-	    },
-	    error: function( error ) {
-	    	CitizenCard.$messages.text("An error occurred when try to retrieve card data.");
-	    },
-	    complete: function() {
-	    	CitizenCard.isRetrivingData = false;
-	    }
-	});
-}
-
 var CitizenCardSocket = CitizenCardSocket || {};
 
 CitizenCardSocket.open = function() {
@@ -129,9 +71,9 @@ CitizenCardSocket.open = function() {
     	 var json = $.parseJSON( event.data );
     	 if (json.cardInserted) {
         	CitizenCard.CardPresent();
-        	CitizenCardSocket.getData(websocket, json.token);
-    	 } else if (json.data) {
-    		 CitizenCard.cardDataFetched(json.data);
+        	if (json.data) {
+        		CitizenCard.cardDataFetched(json.data);
+        	}
     	 } else {
         	CitizenCard.cardNotPresent();
     	 }
@@ -143,23 +85,10 @@ CitizenCardSocket.open = function() {
      };
 }
 
-CitizenCardSocket.getData = function( websocket, token ) {
-	websocket.send(JSON.stringify({
-		  op: "getData",
-		  token: token
-	}));
-}
-
 CitizenCardSocket.writeResponse = function( message ) {
 	console.log(message);
 }
 
 $(function() {
-	if (CitizenCard.mode == 1) {
-		setInterval(function() {
-			CitizenCard.check();
-		}, 1000);
-	} else if (CitizenCard.mode == 2) {
-		CitizenCardSocket.open();
-	}
+	CitizenCardSocket.open();
 });

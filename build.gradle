@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+		    url "http://dl.bintray.com/vermeulen-mp/gradle-plugins"
+		}
+    }
+    dependencies {
+         classpath "com.wiredforcode:gradle-heroku-plugin:1.0.0"
+    }
+}
+
+allprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
+configurations {
+	runtimeOnly
+}
+
+apply plugin: "war"
+apply plugin: "eclipse-wtp"
+
+version = "1.0"
+
+repositories {
+	mavenLocal()
+    mavenCentral()
+}
+
+dependencies {	
+	compile files('libs/pteidlibj.jar')
+	
+	compile 'org.eclipse.jetty:jetty-server:+'
+    compile 'org.eclipse.jetty:jetty-servlet:+'
+    compile 'org.eclipse.jetty.websocket:websocket-client:+'
+    compile 'org.eclipse.jetty.websocket:javax-websocket-server-impl:+'
+	
+	//compile "com.sun.jersey:jersey-client:1.19"
+	//compile "com.sun.jersey:jersey-bundle:1.19"
+	compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.18'
+	
+	compile "com.fasterxml:jackson-module-json-org:0.9.1"
+	
+	compile "javax.websocket:javax.websocket-api:1.1"
+	
+	compile "org.glassfish.jersey.core:jersey-server:2.18"
+	compile "org.glassfish.jersey.containers:jersey-container-jdk-http:2.18"
+}
+

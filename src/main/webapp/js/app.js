@@ -83,6 +83,7 @@ CitizenCardSocket.open = function() {
     websocket.onclose = function( event ) {
     	if (event.code != 1000) {
     		CitizenCard.socketError();
+    		CitizenCardSocket.open();
     	} else {
 	    	CitizenCardSocket.writeResponse("Connection closed");
 			CitizenCard.cardNotPresent();

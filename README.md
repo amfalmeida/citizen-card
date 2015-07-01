@@ -1,5 +1,3 @@
 # citizen-card
 
-Read Portuguese Citizen Card without using Java Applet.
-
-This example uses websocket to check and display Citizen Card on the webpage.
+Read Portuguese Citizen Card without using Java Applet. This example uses websocket to check and display Citizen Card data on the webpage.

@@ -102,7 +102,7 @@ public class CitizenCardWebSocket {
             try {
                 s.getBasicRemote().sendObject(message);
             } catch (IOException | EncodeException ex) {
-                ex.printStackTrace();
+                //ex.printStackTrace();
             }
         }
     }

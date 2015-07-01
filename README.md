@@ -2,7 +2,7 @@
 
 Read Portuguese Citizen Card without using Java Applet. This example uses websockets to check and display Citizen Card data on the webpage.
 
-# Intruction:
+# Instruction:
 + Download the [https://github.com/amfalmeida/citizen-card/blob/master/citizen-card-server.zip] (citizen-card-server.zip) file
 + Unzip the file 
 + Run citizen-card-server.exe file

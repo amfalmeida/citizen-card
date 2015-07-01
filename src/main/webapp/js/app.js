@@ -46,6 +46,10 @@ CitizenCard.cardDataFetched = function( data ) {
 	CitizenCard.$messages.hide();
 }
 
+CitizenCard.socketError = function() {
+	CitizenCard.$messages.html("An error as occurred. Please go to <a href=\"https://github.com/amfalmeida/citizen-card\" target=\"_blank\">https://github.com/amfalmeida/citizen-card</a> and follow the instructions.");
+}
+
 var CitizenCardSocket = CitizenCardSocket || {};
 
 CitizenCardSocket.open = function() {
@@ -54,33 +58,36 @@ CitizenCardSocket.open = function() {
 		CitizenCardSocket.writeResponse("WebSocket is already opened.");
         return;
 	}
-	websocket = new WebSocket("ws://" + CitizenCard.url + "/websocket/citizensocket");
+    websocket = new WebSocket("ws://" + CitizenCard.url + "/websocket/citizensocket");
 	websocket.onopen = function( event ) {
-         if(event.data === undefined) {
-             return;
-         }
-
-         CitizenCardSocket.writeResponse( event.data );
-     };
-
-     websocket.onmessage = function(event) {
-    	 CitizenCardSocket.writeResponse(event.data);
-    	 var json = $.parseJSON( event.data );
-    	 if (json.cardInserted) {
-        	CitizenCard.CardPresent();
-        	if (json.data) {
-        		CitizenCard.cardDataFetched(json.data);
-        	}
-    	 } else {
-        	CitizenCard.cardNotPresent();
-    	 }
-
-     };
-
-     websocket.onclose = function( event ) {
-    	 CitizenCardSocket.writeResponse("Connection closed");
-    	 CitizenCard.cardNotPresent();
-     };
+	     if(event.data === undefined) {
+	         return;
+	     }
+	     CitizenCardSocket.writeResponse( event.data );
+	};
+	
+	websocket.onmessage = function(event) {
+		 CitizenCardSocket.writeResponse(event.data);
+		 var json = $.parseJSON( event.data );
+		 if (json.cardInserted) {
+	    	CitizenCard.CardPresent();
+	    	if (json.data) {
+	    		CitizenCard.cardDataFetched(json.data);
+	    	}
+		 } else {
+	    	CitizenCard.cardNotPresent();
+		 }
+	
+	};
+	
+    websocket.onclose = function( event ) {
+    	if (event.code != 1000) {
+    		CitizenCard.socketError();
+    	} else {
+	    	CitizenCardSocket.writeResponse("Connection closed");
+			CitizenCard.cardNotPresent();
+    	}
+    };
 }
 
 CitizenCardSocket.writeResponse = function( message ) {

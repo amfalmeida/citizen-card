@@ -52,7 +52,7 @@ CitizenCard.check = function() {
 	}
 	CitizenCard.isChecking = true;
 	$.ajax({
-	    url: "http://10.0.1.104:8085/api/checkCard",
+	    url: "http://10.0.1.104:9095/api/checkCard",
 	    jsonp: "callback",
 	    dataType: "jsonp",
 	    success: function( response ) {
@@ -72,7 +72,7 @@ CitizenCard.check = function() {
 	    complete: function() {
 	    	CitizenCard.isChecking = false;
 	    }
-	    
+
 	});
 };
 
@@ -82,10 +82,10 @@ CitizenCard.getData = function() {
 	}
 	CitizenCard.$data.firstname.val("");
 	CitizenCard.$data.surname.val("");
-	
+
 	CitizenCard.isRetrivingData = true;
 	$.ajax({
-	    url: "http://127.0.0.1:8085/api/getData",
+	    url: "http://127.0.0.1:9095/api/getData",
 	    jsonp: "callback",
 	    dataType: "jsonp",
 	    success: function( response ) {
@@ -111,7 +111,7 @@ CitizenCardSocket.open = function() {
         return;
      }
      // Create a new instance of the websocket
-	websocket = new WebSocket("ws://127.0.0.1:8085/websocket");
+	websocket = new WebSocket("ws://127.0.0.1:9095/websocket");
 	websocket.onopen = function( event ) {
          // For reasons I can't determine, onopen gets called twice
          // and the first time event.data is undefined.
@@ -121,7 +121,7 @@ CitizenCardSocket.open = function() {
 
          CitizenCardSocket.writeResponse( event.data );
      };
-     
+
      websocket.onmessage = function(event) {
     	 CitizenCardSocket.writeResponse(event.data);
     	 var json = $.parseJSON( event.data );
@@ -133,7 +133,7 @@ CitizenCardSocket.open = function() {
     	 } else {
         	CitizenCard.cardNotPresent();
     	 }
-    	 
+
      };
 
      websocket.onclose = function( event ) {
@@ -155,7 +155,7 @@ CitizenCardSocket.writeResponse = function( message ) {
 $(function() {
 	if (CitizenCard.mode == 1) {
 		setInterval(function() {
-			CitizenCard.check(); 
+			CitizenCard.check();
 		}, 1000);
 	} else if (CitizenCard.mode == 2) {
 		CitizenCardSocket.open();

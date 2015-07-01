@@ -35,16 +35,16 @@ public class EmbeddedHTTPServer {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Starting Embedded HTTPServer...\n");
-        
+
         CitizenCard.init();
 
-        Server server = new Server(8085);
+        Server server = new Server(9095);
 
 //        ResourceHandler resource_handler = new ResourceHandler();
 //        resource_handler.setDirectoriesListed(true);
 //        resource_handler.setWelcomeFiles(new String[] { "index.html" });
 //        resource_handler.setResourceBase(".");
-//        
+//
 //        HandlerList handlers = new HandlerList();
 //        handlers.setHandlers(new Handler[] { resource_handler, new DefaultHandler() });
 //        server.setHandler(handlers);

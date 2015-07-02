@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Alexandre Almeida.
+* Copyright (c) 2015 Alexandre Almeida.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import pteidlib.PteidException;
 import pteidlib.pteid;
 
 import com.aalmeida.citizencard.entities.CitizenCardData;
+import com.aalmeida.citizencard.entities.ReadingStatus;
 
 /**
  * The Class CitizenCard.
@@ -45,12 +46,14 @@ public class CitizenCard {
     private final Timer cardCheckTimer = new Timer(true);
     private List<ICitizenCardEventListener> listeners = new ArrayList<ICitizenCardEventListener>();
     private static CitizenCardData ccData;
+    private static ReadingStatus.Status ccStatus;
 
     /**
      * Instantiates a new citizen card.
      */
     private CitizenCard() {
         ccData = null;
+        ccStatus = null;
     }
 
     /**
@@ -63,9 +66,7 @@ public class CitizenCard {
             public void run() {
                 try {
                     instance.checkCard();
-                } catch(Throwable t) {
-                    
-                }
+                } catch(Throwable t) { }
             }
         }, 0, 1000);
     }
@@ -101,11 +102,12 @@ public class CitizenCard {
             
             PTEID_TokenInfo tokenInfo = pteid.GetTokenInfo();
             final String token = tokenInfo.serial;
-            if (token != null) {
-                sendNotification(null, true);
-            }
             if (ccData != null && ccData.getToken().equals(token)) {
                 return;
+            }
+            if (token != null) {
+                ccStatus = ReadingStatus.Status.READING;
+                sendNotification(null, ccStatus);
             }            
             ccData = new CitizenCardData();
             ccData.setToken(token);
@@ -113,12 +115,23 @@ public class CitizenCard {
                 PTEID_ID idData = pteid.GetID();
                 ccData.setFirstName(idData.firstname);
                 ccData.setSurname(idData.name);
-            }            
+                ccStatus = ReadingStatus.Status.READ;
+            }
+            ccStatus = ReadingStatus.Status.READ;
+            sendNotification(ccData, ccStatus);
+            
             System.out.println(ccData);
         } catch (PteidException ex) {
-            sendNotification(null, false);
             System.out.println("Card not present. Error: " + ex.getStatus());
-            ccData = null;
+            ccStatus = ReadingStatus.Status.ERROR;
+            int errorNumber = Integer.parseInt(ex.getMessage().split("Error code : -")[1]);
+            for (ReadingStatus.Status status : ReadingStatus.Status.values()) {
+                if (status.getErrorCode() == errorNumber) {
+                    ccStatus = status;
+                }
+            }
+            sendNotification(null, ccStatus);
+            ccData = null; 
         } finally {
             try {
                 pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
@@ -145,10 +158,10 @@ public class CitizenCard {
      * @param inserted
      *            the inserted
      */
-    private void sendNotification(final CitizenCardData data, final boolean inserted) {
+    private void sendNotification(final CitizenCardData data, final  ReadingStatus.Status status) {
         if (listeners != null) {
             for (ICitizenCardEventListener listener : listeners) {
-                listener.cardChangedEvent(data, inserted);
+                listener.cardChangedEvent(data, status);
             }
         }
     }

@@ -32,6 +32,7 @@ import javax.websocket.server.ServerEndpoint;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.aalmeida.citizencard.entities.CitizenCardData;
+import com.aalmeida.citizencard.entities.ReadingStatus;
 
 /**
  * The Class CitizenCardWebSocket.
@@ -117,11 +118,11 @@ public class CitizenCardWebSocket {
          * (com.aalmeida.citizencard.entities.CitizenCardData, boolean)
          */
         @Override
-        public void cardChangedEvent(CitizenCardData ccData, boolean inserted) {
+        public void cardChangedEvent(CitizenCardData ccData, ReadingStatus.Status status) {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> map = new HashMap<String, Object>();
-            map.put("cardInserted", inserted);
-            if (inserted) {
+            map.put("status", status);
+            if (status == ReadingStatus.Status.READ) {
                 map.put("data", CitizenCard.getInstance().getData());
             }
             try {

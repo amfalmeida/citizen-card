@@ -25,17 +25,18 @@ CitizenCard.$data = $("#data");
 CitizenCard.$data.firstname = $("#data-firstname");
 CitizenCard.$data.surname = $("#data-surname");
 
-CitizenCard.CardPresent = function() {
+CitizenCard.CardReading = function() {
 	CitizenCard.cardInserted = true;
 	CitizenCard.$data.hide();
 	CitizenCard.$messages.text("Card inserted. Please wait!!");
 	CitizenCard.$messages.show();
 }
 
-CitizenCard.cardNotPresent = function() {
+CitizenCard.cardNotPresent = function(message) {	
+	message = message || "Insert your card on the card reader.";
 	CitizenCard.cardInserted = false;
 	CitizenCard.$data.hide();
-	CitizenCard.$messages.text("Insert your card on the card reader.");
+	CitizenCard.$messages.text(message);
 	CitizenCard.$messages.show();
 }
 
@@ -69,14 +70,22 @@ CitizenCardSocket.open = function() {
 	websocket.onmessage = function(event) {
 		 CitizenCardSocket.writeResponse(event.data);
 		 var json = $.parseJSON( event.data );
-		 if (json.cardInserted) {
-	    	CitizenCard.CardPresent();
-	    	if (json.data) {
+		 if (json.status) {
+			 if (json.status === "READING") {
+		    	CitizenCard.CardReading();
+			 } else if (json.status === "READ" && json.data) {
 	    		CitizenCard.cardDataFetched(json.data);
-	    	}
-		 } else {
-	    	CitizenCard.cardNotPresent();
-		 }
+			 } else if (json.status === "CHECK_IF_CARD_CORRECT_INSERTED" 
+				 || json.status === "UNKNOW_ERROR" ) {
+		    	CitizenCard.cardNotPresent();
+			 } else if (json.status === "NOT_CC_CARD") {
+				 CitizenCard.cardNotPresent("The card inserted is not a Citizen Card. Please insert a Citizen Card.");
+			 } else if (json.status === "ERROR") {
+				 CitizenCard.cardNotPresent("Please try to remove and insert the card again.");
+			 } else {
+				 CitizenCard.cardNotPresent();
+			 }
+		}
 	
 	};
 	

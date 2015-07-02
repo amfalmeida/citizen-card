@@ -18,6 +18,7 @@ package com.aalmeida.citizencard;
 import java.util.EventListener;
 
 import com.aalmeida.citizencard.entities.CitizenCardData;
+import com.aalmeida.citizencard.entities.ReadingStatus;
 
 /**
  * The listener interface for receiving ICitizenCardEvent events. The class that
@@ -37,9 +38,9 @@ public interface ICitizenCardEventListener extends EventListener {
      *
      * @param ccData
      *            the cc data
-     * @param inserted
-     *            the inserted
+     * @param status
+     *            the status
      */
-    void cardChangedEvent(final CitizenCardData ccData, final boolean inserted);
+    void cardChangedEvent(final CitizenCardData ccData, final ReadingStatus.Status status);
 
 }

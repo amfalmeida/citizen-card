@@ -122,6 +122,7 @@ public class CitizenCard {
             
             System.out.println(ccData);
         } catch (PteidException ex) {
+            ccData = null; 
             System.out.println("Card not present. Error: " + ex.getStatus());
             ccStatus = ReadingStatus.Status.ERROR;
             int errorNumber = Integer.parseInt(ex.getMessage().split("Error code : -")[1]);
@@ -131,7 +132,6 @@ public class CitizenCard {
                 }
             }
             sendNotification(null, ccStatus);
-            ccData = null; 
         } finally {
             try {
                 pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);

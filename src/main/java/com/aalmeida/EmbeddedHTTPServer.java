@@ -27,10 +27,12 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
 import com.aalmeida.citizencard.CitizenCard;
 import com.aalmeida.citizencard.CitizenCardWebSocket;
+import com.aalmeida.citizencard.PhotoServlet;
 
 /**
  * The Class EmbeddedHTTPServer.
@@ -86,29 +88,19 @@ public class EmbeddedHTTPServer {
         }
 
         Server server = new Server(9095);
-
-        /*
-        String currDir = System.getProperty("user.dir");
-        String webdir = currDir + "\\src\\main\\webapp\\";
         
-        ResourceHandler htmlHandler = new ResourceHandler();
-        htmlHandler.setResourceBase(webdir);
-        */
+        ServletHandler handler = new ServletHandler();
+        handler.addServletWithMapping(PhotoServlet.class, "/photo");
 
         ServletContextHandler apiHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         apiHandler.setContextPath("/websocket/*");
         
         HandlerList hl = new HandlerList();
-        //hl.setHandlers(new Handler[]{htmlHandler, apiHandler});
-        hl.setHandlers(new Handler[]{apiHandler});
+        hl.setHandlers(new Handler[]{apiHandler, handler});
         server.setHandler(hl);
 
         ServerContainer wscontainer = WebSocketServerContainerInitializer.configureContext(apiHandler);
         wscontainer.addEndpoint(CitizenCardWebSocket.class);
-
-//        ServletHolder jerseyServlet = apiHandler.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/api/*");
-//        jerseyServlet.setInitOrder(1);
-//        jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", CitizenCardAPI.class.getCanonicalName());
 
         openBrowser();
         

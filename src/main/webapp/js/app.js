@@ -24,6 +24,7 @@ CitizenCard.$messages = $("#messages");
 CitizenCard.$data = $("#data");
 CitizenCard.$data.firstname = $("#data-firstname");
 CitizenCard.$data.surname = $("#data-surname");
+CitizenCard.$data.photo = $("#data-photo");
 
 CitizenCard.CardReading = function() {
 	CitizenCard.cardInserted = true;
@@ -36,6 +37,7 @@ CitizenCard.cardNotPresent = function(message) {
 	message = message || "Insert your card on the card reader.";
 	CitizenCard.cardInserted = false;
 	CitizenCard.$data.hide();
+	CitizenCard.$data.photo.hide();
 	CitizenCard.$messages.text(message);
 	CitizenCard.$messages.show();
 }
@@ -43,6 +45,8 @@ CitizenCard.cardNotPresent = function(message) {
 CitizenCard.cardDataFetched = function( data ) {
 	CitizenCard.$data.firstname.val(data.firstName);
 	CitizenCard.$data.surname.val(data.surname);
+	CitizenCard.$data.photo.attr("src", "http://" + CitizenCard.url + "/photo?nif=" + data.nif);
+	CitizenCard.$data.photo.show();
 	CitizenCard.$data.show();
 	CitizenCard.$messages.hide();
 }

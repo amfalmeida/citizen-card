@@ -15,12 +15,21 @@
  */
 package com.aalmeida.citizencard;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.imageio.ImageIO;
+
 import pteidlib.PTEID_ID;
+import pteidlib.PTEID_PIC;
 import pteidlib.PTEID_TokenInfo;
 import pteidlib.PteidException;
 import pteidlib.pteid;
@@ -42,6 +51,7 @@ public class CitizenCard {
         }
     }
 
+    private static final String PIC_PATH = "pictures";
     private static CitizenCard instance;
     private final Timer cardCheckTimer = new Timer(true);
     private List<ICitizenCardEventListener> listeners = new ArrayList<ICitizenCardEventListener>();
@@ -115,10 +125,22 @@ public class CitizenCard {
                 PTEID_ID idData = pteid.GetID();
                 ccData.setFirstName(idData.firstname);
                 ccData.setSurname(idData.name);
+                ccData.setNif(idData.numNIF);
                 ccStatus = ReadingStatus.Status.READ;
             }
             ccStatus = ReadingStatus.Status.READ;
             sendNotification(ccData, ccStatus);
+            
+            PTEID_PIC picData = pteid.GetPic();
+            if (null != picData) {
+                try {
+                    savePhoto(picData.picture, ccData.getNif());
+                } catch (FileNotFoundException excep) {
+                    System.out.println(excep.getMessage());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             
             System.out.println(ccData);
         } catch (PteidException ex) {
@@ -165,4 +187,30 @@ public class CitizenCard {
             }
         }
     }
+
+    /**
+     * Save photo.
+     *
+     * @param picture
+     *            the picture
+     * @param photoName
+     *            the photo name
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
+    private void savePhoto(final byte[] picture, final String photoName) throws IOException {
+
+        InputStream in = new ByteArrayInputStream(picture);       
+        BufferedImage img = ImageIO.read(in);
+        
+        File f = new File(PIC_PATH, photoName + "." + "bmp");
+        if (!f.exists()) {
+            f.mkdirs();
+            f.createNewFile();
+        }
+        ImageIO.write(img, "bmp", f);
+        System.out.println(f);
+        ImageIO.read(f);
+    }
 }
+

@@ -13,6 +13,7 @@ public class CitizenCardData {
     private String token;
     private String firstname;
     private String surname;
+    private String nif;
 
     /**
      * Gets the token.
@@ -71,12 +72,26 @@ public class CitizenCardData {
         surname = pSurname;
     }
 
-    
+    /**
+     * @return the nif
+     */
+    public String getNif() {
+        return nif;
+    }
+
+    /**
+     * @param pNif the nif to set
+     */
+    public void setNif(String pNif) {
+        nif = pNif;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
-        return "CitizenCardData [token=" + token + ", firstname=" + firstname + ", surname=" + surname + "]";
+        return "CitizenCardData [token=" + token + ", firstname=" + firstname + ", surname=" + surname + ", nif=" + nif
+                + "]";
     }
 }

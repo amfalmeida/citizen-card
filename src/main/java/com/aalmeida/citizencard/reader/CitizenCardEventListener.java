@@ -18,8 +18,8 @@ package com.aalmeida.citizencard.reader;
 
 import java.util.EventListener;
 
-import com.aalmeida.citizencard.controller.entities.CitizenCardData;
-import com.aalmeida.citizencard.controller.entities.ReadingStatus;
+import com.aalmeida.citizencard.reader.model.CardData;
+import com.aalmeida.citizencard.reader.model.ReadingStatus;
 
 /**
  * The listener interface for receiving ICitizenCardEvent events. The class that
@@ -34,14 +34,8 @@ import com.aalmeida.citizencard.controller.entities.ReadingStatus;
  */
 public interface CitizenCardEventListener extends EventListener {
 
-    /**
-     * Card state changed event.
-     *
-     * @param ccData
-     *            the cc data
-     * @param status
-     *            the status
-     */
-    void cardChangedEvent(final CitizenCardData ccData, final ReadingStatus.Status status);
+    void cardChangedEvent(final ReadingStatus status);
+
+    void cardReadEvent(final CardData citizenCardData);
 
 }

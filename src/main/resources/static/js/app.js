@@ -1,113 +1,124 @@
 /*
- * Copyright (c) 2015 Alexandre Almeida.
+ * Copyright (c) 2018 Alexandre Almeida.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
-var CitizenCard = CitizenCard || {};
 
-CitizenCard.url = "127.0.0.1:9095";
+var Client = (function() {
 
-CitizenCard.cardInserted = false;
-CitizenCard.isChecking = false;
-CitizenCard.isRetrivingData = false;
-CitizenCard.$messages = $("#messages");
-CitizenCard.$data = $("#data");
-CitizenCard.$data.firstname = $("#data-firstname");
-CitizenCard.$data.surname = $("#data-surname");
-CitizenCard.$data.photo = $("#data-photo");
+    var stompClient = null;
 
-CitizenCard.CardReading = function() {
-	CitizenCard.cardInserted = true;
-	CitizenCard.$data.hide();
-	CitizenCard.$messages.text("Card inserted. Please wait!!");
-	CitizenCard.$messages.show();
-}
+    function setConnected(connected) {
+        console.log('Connected: ' + connected);
+    }
 
-CitizenCard.cardNotPresent = function(message) {	
-	message = message || "Insert your card on the card reader.";
-	CitizenCard.cardInserted = false;
-	CitizenCard.$data.hide();
-	CitizenCard.$data.photo.hide();
-	CitizenCard.$messages.text(message);
-	CitizenCard.$messages.show();
-}
+    function connect() {
+        var socket = new SockJS('/citizencard-websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log(frame);
+            setConnected(true);
+            stompClient.subscribe('/topic/status', function (data) {
+                var status = $.parseJSON(data.body);
+                if (status === "READING") {
+                    CitizenCard.cardReading();
+                } else if (status === "CHECK_IF_CARD_CORRECT_INSERTED" || status === "NO_CARD" ) {
+                    CitizenCard.cardNotPresent();
+                } else if (status === "NOT_CC_CARD") {
+                    CitizenCard.cardNotPresent("The card inserted is not a Citizen Card. Please insert a Citizen Card.");
+                } else if (status === "ERROR") {
+                    CitizenCard.cardNotPresent("Error reading the card, please try to remove and insert the card again.");
+                } else {
+                    CitizenCard.cardNotPresent();
+                }
+            });
+            stompClient.subscribe('/topic/data', function (data) {
+                var json = $.parseJSON(data.body);
+                CitizenCard.cardDataFetched(json);
+            });
 
-CitizenCard.cardDataFetched = function( data ) {
-	CitizenCard.$data.firstname.val(data.firstName);
-	CitizenCard.$data.surname.val(data.surname);
-	CitizenCard.$data.photo.attr("src", "http://" + CitizenCard.url + "/photo?nif=" + data.nif);
-	CitizenCard.$data.photo.show();
-	CitizenCard.$data.show();
-	CitizenCard.$messages.hide();
-}
+            checkStatus();
+        });
+    }
 
-CitizenCard.socketError = function() {
-	CitizenCard.$messages.html("An error as occurred. Please go to <a href=\"https://github.com/amfalmeida/citizen-card\" target=\"_blank\">https://github.com/amfalmeida/citizen-card</a> and follow the instructions.");
-}
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        setConnected(false);
+        console.log("Disconnected");
+    }
 
-var CitizenCardSocket = CitizenCardSocket || {};
+    function checkStatus() {
+        stompClient.send("/app/status", {}, {});
+    }
 
-CitizenCardSocket.open = function() {
-	var websocket;
-	if(websocket !== undefined && websocket.readyState !== websocket.CLOSED){
-		CitizenCardSocket.writeResponse("WebSocket is already opened.");
-        return;
-	}
-    websocket = new WebSocket("ws://" + CitizenCard.url + "/websocket/citizensocket");
-	websocket.onopen = function( event ) {
-	     if(event.data === undefined) {
-	         return;
-	     }
-	     CitizenCardSocket.writeResponse( event.data );
-	};
-	
-	websocket.onmessage = function(event) {
-		 CitizenCardSocket.writeResponse(event.data);
-		 var json = $.parseJSON( event.data );
-		 if (json.status) {
-			 if (json.status === "READING") {
-		    	CitizenCard.CardReading();
-			 } else if (json.status === "READ" && json.data) {
-	    		CitizenCard.cardDataFetched(json.data);
-			 } else if (json.status === "CHECK_IF_CARD_CORRECT_INSERTED" 
-				 || json.status === "UNKNOW_ERROR" ) {
-		    	CitizenCard.cardNotPresent();
-			 } else if (json.status === "NOT_CC_CARD") {
-				 CitizenCard.cardNotPresent("The card inserted is not a Citizen Card. Please insert a Citizen Card.");
-			 } else if (json.status === "ERROR") {
-				 CitizenCard.cardNotPresent("Please try to remove and insert the card again.");
-			 } else {
-				 CitizenCard.cardNotPresent();
-			 }
-		}
-	
-	};
-	
-    websocket.onclose = function( event ) {
-    	if (event.code != 1000) {
-    		CitizenCard.socketError();
-    		CitizenCardSocket.open();
-    	} else {
-	    	CitizenCardSocket.writeResponse("Connection closed");
-			CitizenCard.cardNotPresent();
-    	}
+    return {
+        connect: connect,
+        disconnect: disconnect,
+        checkStatus: checkStatus
+    }
+
+})();
+
+var CitizenCard = (function() {
+    var $messages = $("#messages"),
+        $data = $("#data"),
+        $dataPhoto = $("#data-photo");
+
+    function cardReading() {
+        $data.hide();
+
+        $messages.removeClass("alert-danger").addClass("alert-primary");
+        $messages.text("Card inserted. Please wait!!");
+        $messages.show();
+    }
+
+    function cardNotPresent(message) {
+        message = message || "Insert your card on the card reader.";
+        $data.hide();
+        $dataPhoto.hide();
+
+        $messages.addClass("alert-danger").removeClass("alert-primary");
+        $messages.text(message);
+        $messages.show();
+    }
+
+    function cardDataFetched(json) {
+        for(var item in json) {
+            console.log(item + " -- " + json[item]);
+            $("#data-" + item).html(json[item]);
+        }
+
+        //$("#data-photo").attr("src", "http://" + CitizenCard.url + "/photo?nif=" + data.nif);
+        //$("#data-photo").show();
+        $data.show();
+        $messages.hide();
+    }
+
+    return {
+        cardReading: cardReading,
+        cardNotPresent: cardNotPresent,
+        cardDataFetched: cardDataFetched
     };
-}
+})();
 
-CitizenCardSocket.writeResponse = function( message ) {
-	console.log(message);
-}
+window.onbeforeunload = function() {
+    Client.disconnect();
+};
 
-$(function() {
-	CitizenCardSocket.open();
+$(function () {
+    Client.connect();
 });
+

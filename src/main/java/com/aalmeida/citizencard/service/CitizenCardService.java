@@ -17,27 +17,42 @@
 
 package com.aalmeida.citizencard.service;
 
+import com.aalmeida.citizencard.reader.model.CardData;
+import com.aalmeida.citizencard.reader.model.ReadingStatus;
 import com.aalmeida.citizencard.logging.Loggable;
-import com.aalmeida.citizencard.reader.CitizenCard;
+import com.aalmeida.citizencard.reader.CitizenCardReader;
+import com.aalmeida.citizencard.reader.CitizenCardEventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CitizenCardService implements Loggable {
+public class CitizenCardService implements Loggable, CitizenCardEventListener {
 
     private final SimpMessagingTemplate template;
-    private final CitizenCard citizenCard;
+    private final CitizenCardReader citizenCard;
 
-    public CitizenCardService(SimpMessagingTemplate template, CitizenCard citizenCard) {
+    public CitizenCardService(SimpMessagingTemplate template, CitizenCardReader citizenCard) {
         this.template = template;
         this.citizenCard = citizenCard;
+
+        citizenCard.addListener(this);
     }
 
-    @Scheduled(fixedRate = 1000)
-    public void publishStatus() {
-        //citizenCard.read();
-        //template.convertAndSend("/topic/status", citizenCard.getStatus());
+    public ReadingStatus getStatus() {
+        return citizenCard.getStatus();
     }
 
+    public CardData getData() {
+        return citizenCard.getCardData();
+    }
+
+    @Override
+    public void cardChangedEvent(ReadingStatus status) {
+        template.convertAndSend("/topic/status", status);
+    }
+
+    @Override
+    public void cardReadEvent(CardData citizenCardData) {
+        template.convertAndSend("/topic/data", citizenCardData);
+    }
 }

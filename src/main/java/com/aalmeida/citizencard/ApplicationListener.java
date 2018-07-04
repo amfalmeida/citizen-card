@@ -18,7 +18,8 @@
 package com.aalmeida.citizencard;
 
 import com.aalmeida.citizencard.logging.Loggable;
-import com.aalmeida.citizencard.reader.CitizenCard;
+import com.aalmeida.citizencard.reader.CitizenCardReader;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ public class ApplicationListener implements Loggable {
 
     @EventListener(ContextRefreshedEvent.class)
     public void onStart() {
-        CitizenCard.loadLibrary();
+        CitizenCardReader.loadLibrary();
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -49,5 +50,11 @@ public class ApplicationListener implements Loggable {
             logger().error("Failed to open browser.", e);
         }
     }
+
+    @EventListener(ContextClosedEvent.class)
+    public void contextClosedEvent() {
+
+    }
+
 
 }

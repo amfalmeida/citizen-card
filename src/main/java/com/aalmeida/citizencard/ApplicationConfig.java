@@ -17,21 +17,20 @@
 
 package com.aalmeida.citizencard;
 
-import com.aalmeida.citizencard.reader.CitizenCard;
+import com.aalmeida.citizencard.reader.CitizenCardReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 public class ApplicationConfig {
 
     static {
-        CitizenCard.loadLibrary();
+        CitizenCardReader.loadLibrary();
     }
 
-    @Bean
-    public CitizenCard citizenCard() {
-        CitizenCard citizenCard = new CitizenCard();
+    @Bean(destroyMethod = "release")
+    public CitizenCardReader citizenCard() {
+        CitizenCardReader citizenCard = new CitizenCardReader();
         citizenCard.init();
         return citizenCard;
     }

@@ -17,20 +17,35 @@
 
 package com.aalmeida.citizencard.reader.model;
 
-public class EventData {
+public class ReaderRef {
 
-    private final String readerName;
+    private final String name;
+    private final long handle;
+    private long cardID;
 
-    public EventData(String readerName) {
-        this.readerName = readerName;
+    public ReaderRef(String name, long handle) {
+        this.name = name;
+        this.handle = handle;
     }
 
-    public String getReaderName() {
-        return readerName;
+    public String getName() {
+        return name;
+    }
+
+    public long getHandle() {
+        return handle;
+    }
+
+    public long getCardID() {
+        return cardID;
+    }
+
+    public void setCardID(long cardID) {
+        this.cardID = cardID;
     }
 
     @Override
     public String toString() {
-        return String.format("EventData{readerName='%s'}", readerName);
+        return String.format("ReaderRef{name='%s', handle=%d, cardID=%d}", name, handle, cardID);
     }
 }

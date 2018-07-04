@@ -17,30 +17,30 @@
 
 package com.aalmeida.citizencard.controller;
 
+import com.aalmeida.citizencard.reader.model.ReadingStatus;
+import com.aalmeida.citizencard.service.CitizenCardService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-
-import java.time.Instant;
 
 @Controller
 public class HomeController {
 
-    @MessageMapping("/hello")
-    public String hello(String greeting) {
-        return String.format("[%s: %s", Instant.now().toString(), greeting);
+    private final CitizenCardService citizenCardService;
+    private final SimpMessagingTemplate template;
+
+    public HomeController(CitizenCardService citizenCardService, SimpMessagingTemplate template) {
+        this.citizenCardService = citizenCardService;
+        this.template = template;
     }
 
-    @MessageMapping("/checkCard")
-    @SendTo("/topic/status")
-    public void checkCard() {
-
+    @MessageMapping("/status")
+    public void checkStatus() {
+        ReadingStatus readingStatus = citizenCardService.getStatus();
+        if (ReadingStatus.READ.equals(readingStatus)) {
+            template.convertAndSend("/topic/data", citizenCardService.getData());
+        } else {
+            template.convertAndSend("/topic/status", readingStatus);
+        }
     }
-
-    @MessageMapping("/getData")
-    @SendTo("/topic/data")
-    public void getData() {
-
-    }
-
 }

@@ -3,8 +3,11 @@
 Read Portuguese Citizen Card without using Java Applet. This example uses websockets to check and display Citizen Card data on the webpage.
 
 # Instruction:
-+ Download the [citizen-card-server.zip] (http://www.amfalmeida.com/citizen-card/citizen-card-server.zip) file
-+ Unzip the file 
-+ Run citizen-card-server.exe file
-+ The webpage [http://www.amfalmeida.com/citizen-card] (http://www.amfalmeida.com/citizen-card) will be opened automatically 
-+ Insert a Citizen Card and see your data
++ Clone this repository
+    + `git clone https://github.com/amfalmeida/citizen-card.git`
++ Build with gradle
+    + `gradle clean build`
++ Run Spring-Boot executable jar
+    + `./citizen-card-0.0.1.jar start`
++ Open URL on you default browser [http://localhost:8080] (http://localhost:8080)
++ Insert a Citizen Card and check the Citizen information data on the webpage

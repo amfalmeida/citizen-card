@@ -8,6 +8,6 @@ Read Portuguese Citizen Card without using Java Applet. This example uses websoc
 + Build with gradle
     + `gradle clean build`
 + Run Spring-Boot executable jar
-    + `./citizen-card-0.0.1.jar start`
+    + `./citizen-card-x.x.x.jar`
 + Open URL on you default browser [http://localhost:8080] (http://localhost:8080)
 + Insert a Citizen Card and check the Citizen information data on the webpage

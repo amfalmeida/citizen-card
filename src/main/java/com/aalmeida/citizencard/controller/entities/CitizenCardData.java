@@ -1,7 +1,7 @@
 /**
- * 
+ *
  */
-package com.aalmeida.citizencard.entities;
+package com.aalmeida.citizencard.controller.entities;
 
 /**
  * The Class CitizenCardData.

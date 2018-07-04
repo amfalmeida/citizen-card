@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.aalmeida.citizencard.entities;
+package com.aalmeida.citizencard.controller.entities;
 
 /**
  * The Class ReadingStatus.
@@ -21,22 +21,22 @@ package com.aalmeida.citizencard.entities;
  * @author Alexandre
  */
 public class ReadingStatus {
-    
+
     public enum Status {
         UNKNOW_ERROR(1101),
-        
+
         CHECK_IF_CARD_CORRECT_INSERTED(1104),
-        
+
         NOT_CC_CARD(1210),
-        
+
         ERROR(0),
-        
+
         READING(1),
-        
+
         READ(2);
-        
+
         private int errorCode;
-        
+
         /**
          * Instantiates a new status.
          *
@@ -46,7 +46,7 @@ public class ReadingStatus {
         Status(int pErrorCode) {
             errorCode = pErrorCode;
         }
-        
+
         /**
          * Gets the error code.
          *

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright (c) 2018 Alexandre Almeida.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+<html>
+<head>
+    <title>Citizen Card Testing</title>
+
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+	<h1>Citizen Card Testing</h1>
+
+	<div id="messages">Checking if card is inserted. Please wait!!.</div>
+
+	<br/>
+	<br/>
+	<div id="data" style="display: none">
+		<img id="data-photo" width="404" style="display: none"/>
+		<br/>
+		<label for="data-firstname">First Name: </label>
+		<input id="data-firstname" type="text" value="" readonly size="100">
+		<br/>
+		<label for="data-surname">Surname: </label>
+		<input id="data-surname" type="text" value="" readonly size="100">
+	</div>
+
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+	<!--script src="js/app.js"></script-->
+    <script src="js/app-socket.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/citizen-card.iml" filepath="$PROJECT_DIR$/citizen-card.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/citizen-card_main.iml" filepath="$PROJECT_DIR$/.idea/modules/citizen-card_main.iml" group="citizen-card" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/citizen-card_test.iml" filepath="$PROJECT_DIR$/.idea/modules/citizen-card_test.iml" group="citizen-card" />
+    </modules>
+  </component>
+</project>

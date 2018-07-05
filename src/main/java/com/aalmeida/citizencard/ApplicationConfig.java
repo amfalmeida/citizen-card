@@ -18,6 +18,7 @@
 package com.aalmeida.citizencard;
 
 import com.aalmeida.citizencard.reader.CitizenCardReader;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -22,17 +22,22 @@ import com.aalmeida.citizencard.reader.model.ReadingStatus;
 import com.aalmeida.citizencard.logging.Loggable;
 import com.aalmeida.citizencard.reader.CitizenCardReader;
 import com.aalmeida.citizencard.reader.CitizenCardEventListener;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-@Service
+@Component
+@CacheConfig(cacheNames = "citizenCard")
 public class CitizenCardService implements Loggable, CitizenCardEventListener {
 
-    private final SimpMessagingTemplate template;
+    private final ApplicationEventPublisher publisher;
     private final CitizenCardReader citizenCard;
 
-    public CitizenCardService(SimpMessagingTemplate template, CitizenCardReader citizenCard) {
-        this.template = template;
+    public CitizenCardService(ApplicationEventPublisher publisher, CitizenCardReader citizenCard) {
+        this.publisher = publisher;
         this.citizenCard = citizenCard;
 
         citizenCard.addListener(this);
@@ -42,6 +47,7 @@ public class CitizenCardService implements Loggable, CitizenCardEventListener {
         return citizenCard.getStatus();
     }
 
+    //@Cacheable(key = "#citizenCardData.getCardNumber()")
     public CardData getData() {
         return citizenCard.getCardData();
     }
@@ -52,11 +58,11 @@ public class CitizenCardService implements Loggable, CitizenCardEventListener {
 
     @Override
     public void cardChangedEvent(ReadingStatus status) {
-        template.convertAndSend("/topic/status", status);
+        this.publisher.publishEvent(status);
     }
 
     @Override
-    public void cardReadEvent(CardData citizenCardData) {
-        template.convertAndSend("/topic/data", citizenCardData);
+    public void cardReadEvent(CardData cardData) {
+        this.publisher.publishEvent(cardData);
     }
 }

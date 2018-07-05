@@ -67,7 +67,7 @@ let Client = (function() {
     }
 
     function getPicture(id) {
-        //stompClient.send("/app/picture/" + id);
+        $("#picture").attr("src", "/picture/" + id);
     }
 
     return {

@@ -17,11 +17,6 @@ allprojects {
     targetCompatibility = 1.8
 }
 
-bootJar {
-    baseName = "${appName}"
-    version =  "${version}"
-}
-
 repositories {
     mavenCentral()
 }
@@ -43,21 +38,51 @@ dependencies {
 
 bootJar {
     launchScript()
+    baseName = "${name}"
+    version =  "${version}"
+    exclude "**/*.properties"
+    exclude "**/service.conf"
     bootRun.systemProperties "java.library.path" : file("./libs")
 }
 
-jar.doFirst{
-    manifest {
-        attributes("Manifest-Version": "1.0",
-                //"Created-By": vendor,
-                //"Specification-Title": appName,
-                "Specification-Version": project.version,
-                //"Specification-Vendor": vendor,
-                //"Implementation-Title": appName,
-                "Implementation-Version": project.version,
-                //"Implementation-Vendor": vendor,
-                "Main-Class": project.mainClassName,
-                "Class-Path": configurations.compile.collect { "lib/" + it.getName() }.join(" ")
-        )
+task dist() {
+    delete 'build/dist'
+    copy {
+        from jar
+        into 'build/dist/'
+    }
+    copy {
+        from 'src/main/resources/service.conf'
+        into 'build/dist/'
+        rename 'service', project.name + '-' + project.version
+    }
+    copy {
+        from 'src/main/resources/citizen-card.service'
+        into 'build/dist/'
+        filter {
+            it
+                .replaceAll('@project.name@', distName)
+                .replaceAll('@project.description@', distDescription)
+                .replaceAll('@projectName@', project.name)
+                .replaceAll('@projectVersion@', project.version)
+        }
+    }
+    copy {
+        from 'src/main/resources/config'
+        into 'build/dist/config'
+    }
+    copy {
+        from 'src/main/dist'
+        into 'build/dist/'
+        filter {
+            it
+                .replaceAll('@project.id@', distId)
+                .replaceAll('@project.name@', distName)
+                .replaceAll('@project.description@', distDescription)
+                .replaceAll('@projectName@', project.name)
+                .replaceAll('@projectVersion@', project.version)
+        }
+        rename 'service', project.name + '-' + project.version
     }
 }
+dist.dependsOn build

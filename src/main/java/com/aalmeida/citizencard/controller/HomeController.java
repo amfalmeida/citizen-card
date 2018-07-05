@@ -17,12 +17,22 @@
 
 package com.aalmeida.citizencard.controller;
 
+import com.aalmeida.citizencard.reader.model.CardData;
 import com.aalmeida.citizencard.reader.model.ReadingStatus;
 import com.aalmeida.citizencard.service.CitizenCardService;
+import org.springframework.context.event.EventListener;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.security.Principal;
 
 @Controller
 public class HomeController {
@@ -45,9 +55,22 @@ public class HomeController {
         }
     }
 
-    @MessageMapping("/picture/{id}")
-    public void getPicture(@DestinationVariable long id) {
-        byte[] picture = citizenCardService.getPicture(id);
-        template.convertAndSend("/topic/picture", picture);
+    @GetMapping(value = "/picture/{id}")
+    public ResponseEntity<byte[]> getImage(@PathVariable("id") long id) {
+        byte[] image = citizenCardService.getPicture(id);
+        if (image == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
+    }
+
+    @EventListener()
+    public void handleReaderStatusEvent(ReadingStatus status) {
+        template.convertAndSend("/topic/status", status);
+    }
+
+    @EventListener()
+    public void handleCardReadEvent(CardData cardData) {
+        template.convertAndSend("/topic/data", cardData);
     }
 }

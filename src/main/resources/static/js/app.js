@@ -15,22 +15,22 @@
  *
  */
 
-var Client = (function() {
+let Client = (function() {
 
-    var stompClient = null;
+    let stompClient = null;
 
     function setConnected(connected) {
         console.log('Connected: ' + connected);
     }
 
     function connect() {
-        var socket = new SockJS('/citizencard-websocket');
+        let socket = new SockJS('/citizencard-websocket');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
             console.log(frame);
             setConnected(true);
             stompClient.subscribe('/topic/status', function (data) {
-                var status = $.parseJSON(data.body);
+                let status = $.parseJSON(data.body);
                 if (status === "READING") {
                     CitizenCard.cardReading();
                 } else if (status === "CHECK_IF_CARD_CORRECT_INSERTED" || status === "NO_CARD" ) {
@@ -44,8 +44,10 @@ var Client = (function() {
                 }
             });
             stompClient.subscribe('/topic/data', function (data) {
-                var json = $.parseJSON(data.body);
-                CitizenCard.cardDataFetched(json);
+                CitizenCard.cardDataFetched($.parseJSON(data.body));
+            });
+            stompClient.subscribe('/topic/picture', function (data) {
+                CitizenCard.pictureFetched(data.body);
             });
 
             checkStatus();
@@ -64,16 +66,21 @@ var Client = (function() {
         stompClient.send("/app/status", {}, {});
     }
 
+    function getPicture(id) {
+        //stompClient.send("/app/picture/" + id);
+    }
+
     return {
         connect: connect,
         disconnect: disconnect,
+        getPicture: getPicture,
         checkStatus: checkStatus
     }
 
 })();
 
-var CitizenCard = (function() {
-    var $messages = $("#messages"),
+let CitizenCard = (function() {
+    let $messages = $("#messages"),
         $data = $("#data"),
         $dataPhoto = $("#data-photo");
 
@@ -96,10 +103,12 @@ var CitizenCard = (function() {
     }
 
     function cardDataFetched(json) {
-        for(var item in json) {
+        for(let item in json) {
             console.log(item + " -- " + json[item]);
             $("#data-" + item).html(json[item]);
         }
+
+        Client.getPicture(json.id);
 
         //$("#data-photo").attr("src", "http://" + CitizenCard.url + "/photo?nif=" + data.nif);
         //$("#data-photo").show();
@@ -107,10 +116,15 @@ var CitizenCard = (function() {
         $messages.hide();
     }
 
+    function pictureFetched(image) {
+        console.log(image);
+    }
+
     return {
         cardReading: cardReading,
         cardNotPresent: cardNotPresent,
-        cardDataFetched: cardDataFetched
+        cardDataFetched: cardDataFetched,
+        pictureFetched: pictureFetched
     };
 })();
 

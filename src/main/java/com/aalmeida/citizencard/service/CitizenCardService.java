@@ -46,6 +46,10 @@ public class CitizenCardService implements Loggable, CitizenCardEventListener {
         return citizenCard.getCardData();
     }
 
+    public byte[] getPicture(long id) {
+        return citizenCard.getPicture(id);
+    }
+
     @Override
     public void cardChangedEvent(ReadingStatus status) {
         template.convertAndSend("/topic/status", status);

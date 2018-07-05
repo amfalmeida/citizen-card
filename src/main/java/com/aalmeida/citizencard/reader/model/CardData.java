@@ -22,6 +22,8 @@ package com.aalmeida.citizencard.reader.model;
 
 public class CardData {
 
+    private final long id;
+
     private final String givenName;
     private final String surname;
     private final String initials;
@@ -43,7 +45,10 @@ public class CardData {
     private final String validityBeginDate;
     private final String validityEndDate;
 
+    private final byte[] picture;
+
     private CardData(Builder builder) {
+        id = builder.id;
         givenName = builder.givenName;
         surname = builder.surname;
         initials = builder.initials;
@@ -59,6 +64,11 @@ public class CardData {
         accidentalIndications = builder.accidentalIndications;
         validityBeginDate = builder.validityBeginDate;
         validityEndDate = builder.validityEndDate;
+        picture = builder.picture;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getGivenName() {
@@ -121,14 +131,19 @@ public class CardData {
         return validityEndDate;
     }
 
+    public byte[] getPicture() {
+        return picture;
+    }
+
     @Override
     public String toString() {
-        return String.format("CardData{givenName='%s', surname='%s', initials='%s', dateOfBirth='%s', gender='%s', country='%s', locale='%s', cardNumber='%s', civilianIdNumber='%s', healthNumber='%s', taxNumber='%s', socialSecurityNumber='%s', accidentalIndications='%s', validityBeginDate='%s', validityEndDate='%s'}",
-                givenName, surname, initials, dateOfBirth, gender, country, locale, cardNumber, civilianIdNumber,
+        return String.format("CardData{id=%s, givenName='%s', surname='%s', initials='%s', dateOfBirth='%s', gender='%s', country='%s', locale='%s', cardNumber='%s', civilianIdNumber='%s', healthNumber='%s', taxNumber='%s', socialSecurityNumber='%s', accidentalIndications='%s', validityBeginDate='%s', validityEndDate='%s'}",
+                id, givenName, surname, initials, dateOfBirth, gender, country, locale, cardNumber, civilianIdNumber,
                 healthNumber, taxNumber, socialSecurityNumber, accidentalIndications, validityBeginDate, validityEndDate);
     }
 
     public static final class Builder {
+        private final long id;
         private String givenName;
         private String surname;
         private String initials;
@@ -144,8 +159,10 @@ public class CardData {
         private String accidentalIndications;
         private String validityBeginDate;
         private String validityEndDate;
+        private byte[] picture;
 
-        public Builder() {
+        public Builder(long id) {
+            this.id = id;
         }
 
         public Builder setGivenName(String givenName) {
@@ -220,6 +237,11 @@ public class CardData {
 
         public Builder setValidityEndDate(String validityEndDate) {
             this.validityEndDate = validityEndDate;
+            return this;
+        }
+
+        public Builder setPicture(byte[] picture) {
+            this.picture = picture;
             return this;
         }
 

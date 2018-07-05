@@ -19,6 +19,7 @@ package com.aalmeida.citizencard.controller;
 
 import com.aalmeida.citizencard.reader.model.ReadingStatus;
 import com.aalmeida.citizencard.service.CitizenCardService;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -42,5 +43,11 @@ public class HomeController {
         } else {
             template.convertAndSend("/topic/status", readingStatus);
         }
+    }
+
+    @MessageMapping("/picture/{id}")
+    public void getPicture(@DestinationVariable long id) {
+        byte[] picture = citizenCardService.getPicture(id);
+        template.convertAndSend("/topic/picture", picture);
     }
 }

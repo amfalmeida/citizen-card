@@ -22,9 +22,11 @@ import com.aalmeida.citizencard.logging.Loggable;
 import com.aalmeida.citizencard.reader.model.EventData;
 import com.aalmeida.citizencard.reader.model.ReaderRef;
 import org.slf4j.LoggerFactory;
+import pt.gov.cartaodecidadao.PTEID_ByteArray;
 import pt.gov.cartaodecidadao.PTEID_EIDCard;
 import pt.gov.cartaodecidadao.PTEID_EId;
 import pt.gov.cartaodecidadao.PTEID_Exception;
+import pt.gov.cartaodecidadao.PTEID_Photo;
 import pt.gov.cartaodecidadao.PTEID_ReaderContext;
 import pt.gov.cartaodecidadao.PTEID_ReaderSet;
 import pt.gov.cartaodecidadao.PTEID_ulwrapper;
@@ -32,7 +34,9 @@ import pt.gov.cartaodecidadao.PTEID_ulwrapper;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessController;
@@ -83,7 +87,7 @@ public class CitizenCardReader implements Loggable {
                             nh.setCardID(wrapCardID.m_long);
 
                             logger().trace("Card changed on card reader '{}'. cardId={}", readerName, wrapCardID.m_long);
-                            CardData citizenCard = read(readerContext.getEIDCard());
+                            CardData citizenCard = read(wrapCardID.m_long, readerContext.getEIDCard());
 
                             if (statusCode == 34) {
                                 sendCardChangedEvent(ReadingStatus.READ);
@@ -113,12 +117,12 @@ public class CitizenCardReader implements Loggable {
         }
     }
 
-    private CardData read(PTEID_EIDCard idCard) {
+    private CardData read(long id, PTEID_EIDCard idCard) {
         CardData ccData = null;
         try {
             PTEID_EId cardData = idCard.getID();
 
-            ccData = new CardData.Builder()
+            ccData = new CardData.Builder(id)
                     .setGivenName(cardData.getGivenName())
                     .setSurname(cardData.getSurname())
                     .setGender(cardData.getGender())
@@ -134,6 +138,9 @@ public class CitizenCardReader implements Loggable {
 
                     .setValidityBeginDate(cardData.getValidityBeginDate())
                     .setValidityEndDate(cardData.getValidityEndDate())
+
+                    //.setPicture(getPicture(cardData.getPhotoObj()))
+
                     .build();
 
             logger().debug("Card readed. cardData={}", ccData);
@@ -141,6 +148,33 @@ public class CitizenCardReader implements Loggable {
             logger().error("Failed to read card", e);
         }
         return ccData;
+    }
+
+    public byte[] getPicture(long id) {
+        try {
+            for (String readerName : READER_REFERENCE_HANDLER.keySet()) {
+                final PTEID_ReaderContext readerContext = PTEID_ReaderSet.instance().getReaderByName(readerName);
+
+                if (!readerContext.isCardPresent()) {
+                    return null;
+                }
+
+                ReaderRef nh = READER_REFERENCE_HANDLER.get(readerName);
+                if (nh.getCardID() != id) {
+                    logger().debug("Card id not match.");
+                    continue;
+                }
+                PTEID_ulwrapper wrapCardID = new PTEID_ulwrapper(nh.getCardID());
+
+                if (readerContext.isCardChanged(wrapCardID)) {
+                    return readerContext.getEIDCard().getID().getPhotoObj().getphoto().GetBytes();
+                }
+                return readerContext.getEIDCard().getID().getPhotoObj().getphoto().GetBytes();
+            }
+        } catch (Exception e) {
+            logger().error("Error while processing event callback.", e);
+        }
+        return null;
     }
 
     public ReadingStatus getStatus() {
@@ -182,10 +216,10 @@ public class CitizenCardReader implements Loggable {
                 PTEID_ulwrapper wrapCardID = new PTEID_ulwrapper(nh.getCardID());
 
                 if (readerContext.isCardChanged(wrapCardID)) {
-                    return read(readerContext.getEIDCard());
+                    return read(nh.getCardID(), readerContext.getEIDCard());
                 }
 
-                return read(readerContext.getEIDCard());
+                return read(nh.getCardID(), readerContext.getEIDCard());
             }
         } catch (Exception e) {
             logger().error("Error while processing event callback.", e);

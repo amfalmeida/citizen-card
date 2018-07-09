@@ -34,7 +34,7 @@ public class ApplicationListener implements Loggable {
 
     @EventListener(ContextRefreshedEvent.class)
     public void onStart() {
-        CitizenCardReader.loadLibrary();
+
     }
 
     @EventListener(ContextRefreshedEvent.class)

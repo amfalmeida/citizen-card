@@ -1,0 +1,18 @@
+# /etc/systemd/system/chuck-api.service
+
+[Unit]
+Description=@project.description@
+After=syslog.target
+
+[Service]
+EnvironmentFile=-/etc/default/@projectName@
+WorkingDirectory=/opt/@projectName@/
+User=chuck
+ExecStart=/path/to/@projectName@-@projectVersion@.jar
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=@projectName@
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
